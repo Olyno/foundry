@@ -194,17 +194,16 @@ jobs:
             ${{ steps.artifacts.outputs.file_name }}
             ${{ steps.man.outputs.foundry_man }}
 
-  release-old:
-    name: Debian 9
+  release-debian-10:
+    name: Debian 10
     runs-on: ubuntu-latest
     needs: prepare
     container: debian:10
-    strategy:
-      matrix:
-        target: x86_64-unknown-linux-gnu
-        platform: debian-9
-        arch: amd64
-        svm_target_platform: linux-amd64
+    env:
+      JOB_TARGET: x86_64-unknown-linux-gnu
+      JOB_PLATFORM: debian-10
+      JOB_ARCH: amd64
+      SVM_TARGET_PLATFORM: linux-amd64
 
     steps:
       - name: Checkout sources
@@ -215,7 +214,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.target }}
+          target: ${{ env.JOB_TARGET }}
           override: true
 
       - uses: Swatinem/rust-cache@v1
@@ -225,17 +224,17 @@ jobs:
       - name: Build binaries
         uses: actions-rs/cargo@v1
         env:
-          SVM_TARGET_PLATFORM: ${{ matrix.svm_target_platform }}
+          SVM_TARGET_PLATFORM: ${{ env.JOB_SVM_TARGET_PLATFORM }}
         with:
           command: build
-          args: --release --bins --target ${{ matrix.target }}
+          args: --release --bins --target ${{ env.JOB_TARGET }}
 
       - name: Archive binaries
         id: artifacts
         env:
-          PLATFORM_NAME: ${{ matrix.platform }}
-          TARGET: ${{ matrix.target }}
-          ARCH: ${{ matrix.arch }}
+          PLATFORM_NAME: ${{ env.JOB_PLATFORM }}
+          TARGET: ${{ env.JOB_TARGET }}
+          ARCH: ${{ env.JOB_ARCH }}
           VERSION_NAME: ${{ (env.IS_NIGHTLY && 'nightly') || needs.prepare.outputs.tag_name }}
         run: |
           if [ "$PLATFORM_NAME" == "linux" ]; then
