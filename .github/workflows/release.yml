@@ -96,6 +96,18 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      - name: Install missing dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            curl \
+            git \
+            libssl-dev \
+            pkg-config \
+            zlib1g-dev
+
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
